@@ -1,0 +1,8 @@
+FROM ubuntu:16.04
+RUN apt-get update
+RUN apt-get install -y sudo curl software-properties-common python-software-properties
+
+COPY . /home/topcam-tracker
+WORKDIR /home/topcam-tracker
+RUN ./install.sh
+RUN /bin/bash -c "source ./.env && make"

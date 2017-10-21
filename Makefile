@@ -13,7 +13,8 @@ all: $(BIN_PATH)
 BOOST_LIBS          = -L /usr/lib/boost/lib -lboost_system
 
 OPENCV_CFLAGS       = $(shell pkg-config --cflags opencv)
-OPENCV_LIBS         = $(shell pkg-config --libs opencv)
+OPENCV_LIBS	    = -lopencv_highgui -lopencv_imgproc -lopencv_core
+#OPENCV_LIBS         = $(shell pkg-config --libs opencv | sed 's/-lopencv_dnn//' | sed 's/-lopencv_shape//') # Don't try to link these two libs
 
 
 VIMBACPP_CFLAGS = -I$(VIMBASDK_DIR)

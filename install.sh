@@ -1,5 +1,4 @@
 #!/bin/bash -e
-clear
 
 VIMBA_SDK_URL="https://www.alliedvision.com/fileadmin/content/software/software/Vimba/Vimba_v2.1.3_Linux.tgz"
 VIMBA_SDK_PATH="Vimba_v2.1.3_Linux.tgz"
@@ -13,12 +12,12 @@ echo "============================================"
 if [ -f "/etc/arch-release" ]; then
 	DISTRO="arch"
 	echo "Detected distribution: Arch Linux"
-elif [ -f "/etc/lsb-release"]; then
+elif [ -f "/etc/lsb-release" ]; then
 	source /etc/lsb-release
-	if [ "$DISTRIB_RELEASE" = "16.04"]; then
+	if [ "$DISTRIB_RELEASE" = "16.04" ]; then
 		DISTRO="xenial"
 		echo "Detected distribution: Xenial Xerus"
-	elif [ "$DISTRIB_RELEASE" = "17.04"]; then
+	elif [ "$DISTRIB_RELEASE" = "17.10" ]; then
 		DISTRO="artful"
 		echo "Detected distribution: Artful Aardvark"
 	else
@@ -53,7 +52,7 @@ echo "Created $(readlink -e $DOTENV_PATH)"
 
 # Install dependencies
 if [ "$DISTRO" = "arch" ]; then
-	PACKAGES="opencv boost gcc make pkg-config cowsay"
+	PACKAGES="opencv hdf5 boost gcc make pkg-config cowsay"
 	sudo pacman -Sy --noconfirm $PACKAGES || echo "Failed to install packages ($PACKAGES). Please install them manually"
 elif [ "$DISTRO" = "artful" ]; then
 	sudo apt-get update
@@ -61,7 +60,7 @@ elif [ "$DISTRO" = "artful" ]; then
 elif [ "$DISTRO" = "xenial" ]; then
 	sudo add-apt-repository -y ppa:timsc/opencv-3.3
 	sudo apt-get update
-	sudo apt-get install -y opencv libboost-all-dev build-essential g++ cowsay
+	sudo apt-get install -y libopencv-dev libboost-all-dev build-essential g++ cowsay
 fi
 
-cowsay "Installation finished!"
+cowsay "Installation finished!" || echo "Installation finished!"
