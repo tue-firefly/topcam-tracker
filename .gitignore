@@ -1,0 +1,11 @@
+# Object files
+*.o
+# Shared libraries
+*.so
+# Vim swap files
+*.swp
+
+# Binary directory
+bin/
+# Object files directory
+obj/
