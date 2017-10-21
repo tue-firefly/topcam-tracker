@@ -34,7 +34,7 @@ int main( int argc, char* argv[] )
             {
                 std::cout<<"Opening camera with ID: "<< strCameraID <<"\n";
                 if(argc < 3) {
-			std::cout << "Example usage: DroneTracker 192.168.0.100 6000\n";
+			std::cout << "Example usage: tracker 192.168.0.100 6000\n";
 			return 1;
 		}
 		std::string ip(argv[1]);
