@@ -1,0 +1,7 @@
+FROM base/archlinux
+RUN pacman -Sy --noconfirm sudo
+
+COPY . /home/topcam-tracker
+WORKDIR /home/topcam-tracker
+RUN ./install.sh
+RUN source ./.env && make

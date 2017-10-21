@@ -9,3 +9,6 @@
 bin/
 # Object files directory
 obj/
+
+# dotenv file
+**/.env
