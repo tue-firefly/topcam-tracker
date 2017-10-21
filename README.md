@@ -7,6 +7,7 @@ Supported distributions are:
 - Arch linux
 - Ubuntu Xenial Xerus (16.04 LTS)
 - Ubuntu Artful Aardvark (17.10)
+
 `install.sh` assumes you have both `curl` and `sudo` installed, install these first in the unlikely case you don't have them already.
 
 ## Testing
