@@ -1,10 +1,12 @@
 sudo: required
 
+language: generic
+
 services:
-	- docker
+- docker
 
 script:
-	- docker build . -f dockerfiles/arch
-	- docker build . -f dockerfiles/xenial
-	- docker build . -f dockerfiles/artful 
+- docker build . -f dockerfiles/arch
+- docker build . -f dockerfiles/xenial
+- docker build . -f dockerfiles/artful 
 
