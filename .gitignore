@@ -12,3 +12,6 @@ obj/
 
 # dotenv file
 **/.env
+
+# test binary
+test/test

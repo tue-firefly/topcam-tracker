@@ -4,6 +4,10 @@
 #include "VimbaCPP/Include/VimbaCPP.h"
 
 #include "UDPClient.h"
+#include "DroneDetector.h"
+#include <opencv2/imgproc.hpp>
+
+using namespace cv;
 
 namespace AVT {
 namespace VmbAPI {
@@ -32,6 +36,9 @@ public:
 
 private:
     UDPClient                   udp;
+    DroneDetector		detector;
+    boost::asio::io_service 	io_service;
+    double 			exposure;
 };
 
 }}} // namespace AVT::VmbAPI::Examples

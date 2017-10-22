@@ -5,8 +5,12 @@ language: generic
 services:
 - docker
 
-script:
-- docker build . -f dockerfiles/arch
-- docker build . -f dockerfiles/xenial
-- docker build . -f dockerfiles/artful 
+install:
+- docker build . -t arch -f dockerfiles/arch
+- docker build . -t xenial -f dockerfiles/xenial
+- docker build . -t artful -f dockerfiles/artful 
 
+script:
+- docker run -t arch make test
+- docker run -t xenial make test
+- docker run -t artful make test
