@@ -8,7 +8,7 @@ services:
 install:
 - docker build . -t arch -f dockerfiles/arch
 - docker build . -t xenial -f dockerfiles/xenial
-- docker build . -f -t artful dockerfiles/artful 
+- docker build . -t artful -f dockerfiles/artful 
 
 script:
 - docker run -t arch make test
