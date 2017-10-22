@@ -88,26 +88,23 @@ DroneDetector::DroneLocation DroneDetector::FindDrone(Mat frame) {
         }
 
         std::cout << "x: " << physicalCenter.x << ", y: " << physicalCenter.y << "psi: " << (psi / M_PI * 180) << "\n";
+	DroneLocation loc;
+	loc.deltaIntensity = 0;
+	loc.x = -physicalCenter.y;
+	loc.y = physicalCenter.x;
+	loc.psi = psi;
+	
         // According to conventions
-        return {
-            0,
-            -physicalCenter.y,
-            physicalCenter.x,
-            psi
-        };
+        return loc; 
     }
     else {
+	DroneLocation loc;
         if(contours.size() > 4) {
-            return {
-                -100,
-                0,0,0
-            };
+            loc.deltaIntensity = -100;
         } 
         else {
-            return {
-                100,
-                0,0,0
-            };
+            loc.deltaIntensity = 100; 
         }
+	return loc;
     }
 }
