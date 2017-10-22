@@ -4,6 +4,7 @@
 #include "VimbaCPP/Include/VimbaCPP.h"
 
 #include "UDPClient.h"
+#include "DroneDetector.h"
 #include <opencv2/imgproc.hpp>
 
 using namespace cv;
@@ -35,16 +36,9 @@ public:
 
 private:
     UDPClient                   udp;
-
-    struct DroneLocation {
-	int deltaIntensity;
-	double x;
-	double y;
-	double psi;
-    };
-	
-    DroneLocation FindDrone(Mat frame);
-
+    DroneDetector		detector;
+    boost::asio::io_service 	io_service;
+    double 			exposure = 6000;
 };
 
 }}} // namespace AVT::VmbAPI::Examples

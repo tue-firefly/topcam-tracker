@@ -41,7 +41,8 @@ CFLAGS              = -Wall -Wextra -Werror \
                       $(VIMBACPP_CFLAGS) \
                       $(OPENCV_CFLAGS)
 
-OBJ_FILES           = $(OBJ_DIR)/ApiController.o \
+OBJ_FILES           = $(OBJ_DIR)/DroneDetector.o \
+                      $(OBJ_DIR)/ApiController.o \
                       $(OBJ_DIR)/FrameObserver.o \
                       $(OBJ_DIR)/program.o
 
