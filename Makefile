@@ -27,7 +27,7 @@ VimbaCPP: $(BIN_DIR)
 	cp $(VIMBASDK_DIR)/VimbaCPP/DynamicLib/$(ARCH)_$(WORDSIZE)bit/libVimbaCPP.so $(BIN_DIR)/
 
 
-SOURCE_DIR          = src/
+SOURCE_DIR          = src
 INCLUDE_DIRS        = -I$(SOURCE_DIR)
 
 LIBS                = $(VIMBACPP_LIBS) \
