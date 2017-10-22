@@ -28,6 +28,7 @@ FrameObserver::FrameObserver( CameraPtr pCamera, const std::string& ip, const st
     :   IFrameObserver( pCamera )
     ,   udp(io_service, ip, port)
 {
+    exposure = 6000;
 }
 
 //

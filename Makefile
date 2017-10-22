@@ -41,7 +41,7 @@ TEST_LIBS	    = $(OPENCV_LIBS) \
 		      -lopencv_imgcodecs \
 		      $(BOOST_TEST_LIBS)
 
-CFLAGS              = -Wall -Wextra -Werror \
+CFLAGS              = -std=c++98 -Wall -Wextra -Werror \
                       $(COMMON_CFLAGS) \
                       $(VIMBACPP_CFLAGS) \
                       $(OPENCV_CFLAGS)
