@@ -17,4 +17,7 @@ If you receive the error "Not found", first verify that you can open the camera 
 Then when you have succesfully done so and the application still does not start, please file an issue with steps to reproduce the error (list distribution, `install.sh` console output etc.)
 
 ## Testing
-`dockerfiles/` contains a simple Dockerfile for each of the supported distributions, that will run `ìnstall.sh` and build the application in a container. Travis CI is set up to build these containers automatically after each commit. Before pushing you should run these tests yourself, i.e. run `docker build -f dockerfiles/<file> .` for each of the Dockerfiles and verify that they build succesfully.
+Tests are included for the install script and basic drone detection functionality.
+If you are testing new functionality locally you can just run `make test` to make sure things work, at least in your environment.
+
+`dockerfiles/` contains a simple Dockerfile for each of the supported distributions, that will run `ìnstall.sh` and build the application in a container. It will also run `make test` in every container to verify that drone detection works there.  Travis CI is set up to build these containers automatically after each commit. 
