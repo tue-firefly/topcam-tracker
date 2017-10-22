@@ -6,6 +6,7 @@ services:
 - docker
 
 script:
+- make test
 - docker build . -f dockerfiles/arch
 - docker build . -f dockerfiles/xenial
 - docker build . -f dockerfiles/artful 
