@@ -77,7 +77,7 @@ test: $(TEST_DIR)/test
 clean:
 	rm bin -rf
 	rm obj -rf
-	rm test/*.o
+	rm -f test/*.o
 
 $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
