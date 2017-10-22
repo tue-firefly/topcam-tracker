@@ -36,7 +36,8 @@ LIBS                = $(VIMBACPP_LIBS) \
 		      -lrt \
                       -pthread \
 
-CFLAGS              = $(COMMON_CFLAGS) \
+CFLAGS              = -Wall -Wextra -Werror \
+                      $(COMMON_CFLAGS) \
                       $(VIMBACPP_CFLAGS) \
                       $(OPENCV_CFLAGS)
 

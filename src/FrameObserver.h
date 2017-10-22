@@ -4,6 +4,9 @@
 #include "VimbaCPP/Include/VimbaCPP.h"
 
 #include "UDPClient.h"
+#include <opencv2/imgproc.hpp>
+
+using namespace cv;
 
 namespace AVT {
 namespace VmbAPI {
@@ -32,6 +35,16 @@ public:
 
 private:
     UDPClient                   udp;
+
+    struct DroneLocation {
+	int deltaIntensity;
+	double x;
+	double y;
+	double psi;
+    };
+	
+    DroneLocation FindDrone(Mat frame);
+
 };
 
 }}} // namespace AVT::VmbAPI::Examples
