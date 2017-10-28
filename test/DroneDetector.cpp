@@ -1,6 +1,7 @@
 #define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE DroneDetector
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -31,6 +32,9 @@ BOOST_AUTO_TEST_CASE(detect_drones)
     std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK(deltaExposure == 0);
     BOOST_CHECK(locs.size() == 3);
+    for(int i = 0; i < 3; i++) {
+        std::cout << "Drone " << i << ": " << locs[i].pos << " at angle: " << locs[i].psi << "\n";
+    }
 }
 
 BOOST_AUTO_TEST_CASE(too_many)

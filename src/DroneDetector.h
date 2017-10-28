@@ -6,9 +6,7 @@
 class DroneDetector {
     public:
         struct DroneLocation {
-            int deltaIntensity;
-            double x;
-            double y;
+            cv::Point2f pos;
             double psi;
         };
 
@@ -18,6 +16,8 @@ class DroneDetector {
         std::vector<DroneLocation> FindDrones(cv::Mat frame, int* deltaIntensity);
 
     private:
+        double oldPsi;
+        double oldTime;
         unsigned int nr_drones;	
         std::vector< std::vector<cv::Point2f> > PartitionPoints(std::vector<cv::Point2f> points); 
 

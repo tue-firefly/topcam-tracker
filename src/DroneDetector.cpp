@@ -15,10 +15,8 @@
 #define PSI_MAX_DIFF 0.35
 // If detection fails, change the exposure by this amount
 #define DELTA_EXPOSURE 100
-
-
-double oldPsi;
-double oldTime;
+// Number of leds per drone
+#define NR_LEDS 4
 
 using namespace cv;
 using namespace std;
@@ -28,8 +26,16 @@ DroneDetector::DroneDetector(unsigned int nr_drones) {
 }
 
 vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points) {
-    vector< vector<Point2f> > partitioned(1);
-    partitioned[0] = (points);
+    Mat labels, centers;
+    kmeans(points, nr_drones, labels, 
+        TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 10, 1.0),
+        3, KMEANS_PP_CENTERS, centers);
+    cout << "Labels: " << labels.at<int>(0) << "\n";
+    vector<vector<Point2f> > partitioned(nr_drones);
+    for(unsigned int i = 0; i < points.size(); i++) {
+        int cluster = labels.at<int>(i);
+        partitioned[cluster].push_back(points[i]);
+    }
     return partitioned;    
 }
 
@@ -92,10 +98,9 @@ DroneDetector::DroneLocation DroneDetector::GetLocation(vector<Point2f> leds) {
     }
 
     DroneLocation loc;
-    loc.deltaIntensity = 0;
     // According to conventions
-    loc.x = -physicalCenter.y;
-    loc.y = physicalCenter.x;
+    Point2f pos(-physicalCenter.y, physicalCenter.x);
+    loc.pos = pos;
     loc.psi = psi;
     
     return loc; 
@@ -111,7 +116,7 @@ vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* d
     findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
     cout << "Found " << contours.size() << " contours\n";
 
-    if (contours.size() == nr_drones * 4) {
+    if (contours.size() == nr_drones * NR_LEDS) {
         // Turn contours into points 
         vector<Point2f> leds(contours.size());
         for(unsigned int i = 0; i < contours.size(); i++) {
@@ -129,7 +134,7 @@ vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* d
 
     }
     else {
-        if(contours.size() > nr_drones * 4) {
+        if(contours.size() > nr_drones * NR_LEDS) {
             *deltaIntensity = -DELTA_EXPOSURE;
         } 
         else {
