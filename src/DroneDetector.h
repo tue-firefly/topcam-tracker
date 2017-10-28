@@ -12,7 +12,8 @@ class DroneDetector {
             double psi;
         };
         
-        DroneLocation FindDrone(cv::Mat frame);
+	DroneLocation GetLocation(std::vector< std::vector<cv::Point> > contours);
+        DroneLocation FindDrones(cv::Mat frame);
 };
 
 #endif

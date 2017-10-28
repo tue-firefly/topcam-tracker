@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(detect_drone)
     Mat grey;
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrone(grey);
+    DroneDetector::DroneLocation loc = detector.FindDrones(grey);
     BOOST_CHECK(loc.deltaIntensity == 0);
 }
 
@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(too_many)
     Mat grey;
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrone(grey);
+    DroneDetector::DroneLocation loc = detector.FindDrones(grey);
     BOOST_CHECK(loc.deltaIntensity == -100);
 }
 
@@ -35,6 +35,6 @@ BOOST_AUTO_TEST_CASE(too_few)
     Mat grey;
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrone(grey);
+    DroneDetector::DroneLocation loc = detector.FindDrones(grey);
     BOOST_CHECK(loc.deltaIntensity == 100);
 }
