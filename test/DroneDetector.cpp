@@ -21,6 +21,18 @@ BOOST_AUTO_TEST_CASE(detect_drone)
     BOOST_CHECK(locs.size() == 1);
 }
 
+BOOST_AUTO_TEST_CASE(detect_drones)
+{
+    Mat image = imread("drones.png", CV_LOAD_IMAGE_GRAYSCALE);
+    Mat grey;
+    image.convertTo(grey, CV_8UC1);
+    DroneDetector detector(3);
+    int deltaExposure = 0;
+    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    BOOST_CHECK(deltaExposure == 0);
+    BOOST_CHECK(locs.size() == 3);
+}
+
 BOOST_AUTO_TEST_CASE(too_many)
 {
     Mat image = imread("too_many.png", CV_LOAD_IMAGE_GRAYSCALE);

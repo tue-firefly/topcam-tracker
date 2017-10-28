@@ -68,7 +68,6 @@ DroneDetector::DroneLocation DroneDetector::GetLocation(vector<Point2f> leds) {
     Point2f physicalCenter = center * PIXELS2METERS - offset;
 
     Vec4f line;
-    cout << "Leds: " << leds.size() << "\n";
     fitLine(leds, line, CV_DIST_L2, 0, 0.01, 0.01);
 
     Point2f lineDirection = Point2f(line[0], line[1]);
@@ -121,9 +120,10 @@ vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* d
         } 
 
         vector<vector<Point2f> > partitioned = PartitionPoints(leds);
-        vector<DroneLocation> locations(nr_drones);
+        vector<DroneLocation> locations;
+        locations.reserve(nr_drones);
         for(unsigned int i = 0; i < partitioned.size(); i++) {
-            locations[i] = GetLocation(partitioned[i]);
+            locations.push_back(GetLocation(partitioned[i]));
         }
         return locations;
 
