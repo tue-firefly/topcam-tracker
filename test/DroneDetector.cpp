@@ -7,34 +7,41 @@
 #include "../src/DroneDetector.h"
 
 using namespace cv;
+using namespace std;
 
 BOOST_AUTO_TEST_CASE(detect_drone)
 {
     Mat image = imread("drone.png", CV_LOAD_IMAGE_GRAYSCALE);
     Mat grey;
     image.convertTo(grey, CV_8UC1);
-    DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrones(grey);
-    BOOST_CHECK(loc.deltaIntensity == 0);
+    DroneDetector detector(1);
+    int deltaExposure = 0;
+    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    BOOST_CHECK(deltaExposure == 0);
+    BOOST_CHECK(locs.size() == 1);
 }
-
 
 BOOST_AUTO_TEST_CASE(too_many)
 {
     Mat image = imread("too_many.png", CV_LOAD_IMAGE_GRAYSCALE);
     Mat grey;
     image.convertTo(grey, CV_8UC1);
-    DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrones(grey);
-    BOOST_CHECK(loc.deltaIntensity == -100);
+    DroneDetector detector(1);
+    int deltaExposure = 0;
+    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    BOOST_CHECK(deltaExposure == -100);
+    BOOST_CHECK(locs.size() == 0);
 }
+
 
 BOOST_AUTO_TEST_CASE(too_few)
 {
     Mat image = imread("too_few.png", CV_LOAD_IMAGE_GRAYSCALE);
     Mat grey;
     image.convertTo(grey, CV_8UC1);
-    DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrones(grey);
-    BOOST_CHECK(loc.deltaIntensity == 100);
+    DroneDetector detector(1);
+    int deltaExposure = 0;
+    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    BOOST_CHECK(deltaExposure == 100);
+    BOOST_CHECK(locs.size() == 0);
 }

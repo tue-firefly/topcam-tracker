@@ -11,9 +11,16 @@ class DroneDetector {
             double y;
             double psi;
         };
-        
-	DroneLocation GetLocation(std::vector< std::vector<cv::Point> > contours);
-        DroneLocation FindDrones(cv::Mat frame);
+
+        DroneDetector(unsigned int nr_drones);
+			
+        DroneLocation GetLocation(std::vector<cv::Point2f> leds);
+        std::vector<DroneLocation> FindDrones(cv::Mat frame, int* deltaIntensity);
+
+    private:
+        unsigned int nr_drones;	
+        std::vector< std::vector<cv::Point2f> > PartitionPoints(std::vector<cv::Point2f> points); 
+
 };
 
 #endif
