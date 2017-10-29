@@ -11,6 +11,9 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <memory>
+#include <boost/asio.hpp>
+
 using namespace cv;
 
 namespace AVT {
@@ -24,9 +27,10 @@ namespace Examples {
 // Parameters:
 //  [in]    pCamera             The camera the frame was queued at
 //
-FrameObserver::FrameObserver( CameraPtr pCamera, const std::string& ip, const std::string& port)
+FrameObserver::FrameObserver( CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port)
     :   IFrameObserver( pCamera )
     ,   udp(io_service, ip, port)
+    ,   detector(nrDrones)
 {
     exposure = 6000;
 }
@@ -57,18 +61,25 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
             Mat frame;
             frame.create(nHeight, nWidth, CV_8UC1);
             memcpy(frame.data, pImage, nWidth * nHeight);
-            DroneDetector::DroneLocation loc = detector.FindDrone(frame);
+            int deltaExposure = 0;
+            std::vector<DroneDetector::DroneState> states = detector.FindDrones(frame, &deltaExposure);
 
-            if (loc.deltaIntensity == 0) {
-                boost::array<double, 3> data;
-                data[0] = loc.x;
-                data[1] = loc.y;
-                data[2] = loc.psi;
-                udp.send(data);
+            for(unsigned int i = 0; i < states.size(); i++) {
+                std::vector<boost::asio::const_buffer> buffers;
+                unsigned int id = states[i].id;
+                double x = states[i].pos.x;
+                double y = states[i].pos.y;
+                double psi = states[i].psi;
+                buffers.push_back(boost::asio::buffer(&id, sizeof(id)));
+                buffers.push_back(boost::asio::buffer(&x, sizeof(x)));
+                buffers.push_back(boost::asio::buffer(&y, sizeof(y)));
+                buffers.push_back(boost::asio::buffer(&psi, sizeof(psi)));
+                udp.send(buffers);
+                
             }
             // Could not detect the drone, tweak intensity and hope the next frame will be better
-            else {
-                exposure += loc.deltaIntensity;
+            if(deltaExposure != 0) {
+                exposure += deltaExposure;
                 if (exposure < 1000) {
                     exposure = 1000;
                 }

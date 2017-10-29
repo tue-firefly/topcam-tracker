@@ -1,4 +1,5 @@
 #include <string>
+#include <stdlib.h>
 #include <cstring>
 #include <iostream>
 
@@ -13,6 +14,19 @@ int main( int argc, char* argv[] )
     std::cout<<"/// Glow LED Ground robot / Drone tracker ///\n";
     std::cout<<"/////////////////////////////////////////////\n\n";
 
+    if(argc < 4) {
+        std::cout << "Example usage: tracker 3 192.168.0.100 6000\n";
+        return 1;
+    }
+    long n = strtol(argv[1], NULL, 10);
+    if (n <= 0 || n > 10) {
+        std::cout << "Number of drones should be between 1 and 10\n";
+        return 1;
+    }
+    unsigned int nrDrones = n;
+    std::cout << "Searching for " << nrDrones << " drones\n";
+    std::string ip(argv[2]);
+    std::string port(argv[3]);
 
     AVT::VmbAPI::Examples::ApiController apiController;
     
@@ -22,7 +36,7 @@ int main( int argc, char* argv[] )
     {
 
         AVT::VmbAPI::CameraPtrVector cameras = apiController.GetCameraList();
-        if( cameras.empty() )
+        if( cameras.empty())
         {
             err = VmbErrorNotFound;
         }
@@ -33,13 +47,7 @@ int main( int argc, char* argv[] )
             if( VmbErrorSuccess == err )
             {
                 std::cout<<"Opening camera with ID: "<< strCameraID <<"\n";
-                if(argc < 3) {
-			std::cout << "Example usage: tracker 192.168.0.100 6000\n";
-			return 1;
-		}
-		std::string ip(argv[1]);
-		std::string port(argv[2]);
-                err = apiController.StartContinuousImageAcquisition( strCameraID, ip, port);
+                err = apiController.StartContinuousImageAcquisition( strCameraID, nrDrones, ip, port);
     
                 if ( VmbErrorSuccess == err )
                 {

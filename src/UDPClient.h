@@ -23,7 +23,7 @@ public:
 		socket_.close();
 	}
 
-	void send(const boost::array<double, 3>& msg) {
+	void send(std::vector<boost::asio::const_buffer>& msg) {
 		socket_.send_to(boost::asio::buffer(msg), endpoint_);
 	}
 
