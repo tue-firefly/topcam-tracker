@@ -3,6 +3,7 @@
 #include <opencv2/imgproc.hpp>
 
 #include <iostream>
+#include <limits>
 #include <ctime>
 #include <algorithm> 
 
@@ -30,7 +31,6 @@ vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points)
     kmeans(points, nr_drones, labels, 
         TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 10, 1.0),
         3, KMEANS_PP_CENTERS, centers);
-    cout << "Labels: " << labels.at<int>(0) << "\n";
     vector<vector<Point2f> > partitioned(nr_drones);
     for(unsigned int i = 0; i < points.size(); i++) {
         int cluster = labels.at<int>(i);
@@ -39,11 +39,11 @@ vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points)
     return partitioned;    
 }
 
-DroneDetector::DroneLocation DroneDetector::GetLocation(vector<Point2f> leds) {
+DroneDetector::DroneState DroneDetector::GetState(vector<Point2f> leds) {
     float xSum = 0;
     float ySum = 0;
 
-    // Calculate weighted average of leds
+    // Calculate average of leds
     for(unsigned int i = 0; i < leds.size(); i++ ) {
         xSum += leds[i].x;
         ySum += leds[i].y;
@@ -86,27 +86,40 @@ DroneDetector::DroneLocation DroneDetector::GetLocation(vector<Point2f> leds) {
     Point2f dir(cos(psi), sin(psi));
 
     psi = fmod(psi + (M_PI/2), 2*M_PI);
-    double time = clock() / (double) CLOCKS_PER_SEC;
-    if (time < oldTime + 1 && (abs(psi-oldPsi) > PSI_MAX_DIFF || abs(psi-oldPsi) < (2*M_PI - PSI_MAX_DIFF))) {
-        // If within 1 second the difference in angle is more than PSI_MAX_DIFF, 
-        // this measurement is invalid
-        psi = oldPsi;
-    }
-    else {
-        oldPsi = psi;
-        oldTime = time;
-    }
 
-    DroneLocation loc;
+    DroneState state;
     // According to conventions
     Point2f pos(-physicalCenter.y, physicalCenter.x);
-    loc.pos = pos;
-    loc.psi = psi;
+    state.pos = pos;
+    state.psi = psi;
     
-    return loc; 
+    return state; 
 }
 
-vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* deltaIntensity) {
+void DroneDetector::UpdateStates(std::vector<DroneState>& states) {
+    if(previousStates.size() == 0) {
+        // First run there are no previous states
+        previousStates = states;
+        return;
+    }
+    for(unsigned int i = 0; i < states.size(); i++) {
+        int minIndex = -1;
+        float minDistance = std::numeric_limits<float>::max();
+        for(unsigned int j = 0; j < previousStates.size(); j++) {
+            float distance = norm(Mat(states[i].pos), Mat(previousStates[j].pos));
+            if(distance < minDistance) {
+                minIndex = j;
+                minDistance = distance;
+            }    
+        }
+        states[i].id = previousStates[minIndex].id;
+        // Delete the state to avoid assigning it twice
+        previousStates.erase(previousStates.begin() + minIndex);
+    }
+    previousStates = states;
+}
+
+vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* deltaIntensity) {
     // Find contours in frame
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -114,7 +127,6 @@ vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* d
     
     threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
     findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-    cout << "Found " << contours.size() << " contours\n";
 
     if (contours.size() == nr_drones * NR_LEDS) {
         // Turn contours into points 
@@ -125,12 +137,13 @@ vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* d
         } 
 
         vector<vector<Point2f> > partitioned = PartitionPoints(leds);
-        vector<DroneLocation> locations;
-        locations.reserve(nr_drones);
+        vector<DroneState> states;
+        states.reserve(nr_drones);
         for(unsigned int i = 0; i < partitioned.size(); i++) {
-            locations.push_back(GetLocation(partitioned[i]));
+            states.push_back(GetState(partitioned[i]));
         }
-        return locations;
+        UpdateStates(states);
+        return states;
 
     }
     else {
@@ -140,6 +153,6 @@ vector<DroneDetector::DroneLocation> DroneDetector::FindDrones(Mat frame, int* d
         else {
             *deltaIntensity = DELTA_EXPOSURE; 
         }
-        return vector<DroneDetector::DroneLocation>();
+        return vector<DroneDetector::DroneState>();
     }
 }

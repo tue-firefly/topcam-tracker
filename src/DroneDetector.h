@@ -5,21 +5,23 @@
 
 class DroneDetector {
     public:
-        struct DroneLocation {
+        struct DroneState {
+            unsigned int id;
             cv::Point2f pos;
             double psi;
         };
 
         DroneDetector(unsigned int nr_drones);
 			
-        DroneLocation GetLocation(std::vector<cv::Point2f> leds);
-        std::vector<DroneLocation> FindDrones(cv::Mat frame, int* deltaIntensity);
+        DroneState GetState(std::vector<cv::Point2f> leds);
+        std::vector<DroneState> FindDrones(cv::Mat frame, int* deltaIntensity);
 
     private:
-        double oldPsi;
-        double oldTime;
         unsigned int nr_drones;	
+        std::vector<DroneState> previousStates;
+
         std::vector< std::vector<cv::Point2f> > PartitionPoints(std::vector<cv::Point2f> points); 
+        void UpdateStates(std::vector<DroneState>& states);
 
 };
 

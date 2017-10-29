@@ -17,9 +17,9 @@ BOOST_AUTO_TEST_CASE(detect_drone)
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector(1);
     int deltaExposure = 0;
-    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    std::vector<DroneDetector::DroneState> states = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK(deltaExposure == 0);
-    BOOST_CHECK(locs.size() == 1);
+    BOOST_CHECK(states.size() == 1);
 }
 
 BOOST_AUTO_TEST_CASE(detect_drones)
@@ -29,11 +29,11 @@ BOOST_AUTO_TEST_CASE(detect_drones)
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector(3);
     int deltaExposure = 0;
-    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    std::vector<DroneDetector::DroneState> state = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK(deltaExposure == 0);
-    BOOST_CHECK(locs.size() == 3);
+    BOOST_CHECK(state.size() == 3);
     for(int i = 0; i < 3; i++) {
-        std::cout << "Drone " << i << ": " << locs[i].pos << " at angle: " << locs[i].psi << "\n";
+        cout << "Drone " << i << ": " << state[i].pos << " at angle: " << state[i].psi << "\n";
     }
 }
 
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(too_many)
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector(1);
     int deltaExposure = 0;
-    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    std::vector<DroneDetector::DroneState> states = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK(deltaExposure == -100);
-    BOOST_CHECK(locs.size() == 0);
+    BOOST_CHECK(states.size() == 0);
 }
 
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(too_few)
     image.convertTo(grey, CV_8UC1);
     DroneDetector detector(1);
     int deltaExposure = 0;
-    std::vector<DroneDetector::DroneLocation> locs = detector.FindDrones(grey, &deltaExposure);
+    std::vector<DroneDetector::DroneState> states = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK(deltaExposure == 100);
-    BOOST_CHECK(locs.size() == 0);
+    BOOST_CHECK(states.size() == 0);
 }
