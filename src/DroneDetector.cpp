@@ -22,16 +22,17 @@
 using namespace cv;
 using namespace std;
 
-DroneDetector::DroneDetector(unsigned int nr_drones) {
-    this->nr_drones = nr_drones;
+DroneDetector::DroneDetector(unsigned int nrDrones) {
+    this->nrDrones = nrDrones;
 }
 
 vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points) {
     Mat labels, centers;
-    kmeans(points, nr_drones, labels, 
+    int nrClusters = points.size() / NR_LEDS;
+    kmeans(points, nrClusters, labels, 
         TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 10, 1.0),
         3, KMEANS_PP_CENTERS, centers);
-    vector<vector<Point2f> > partitioned(nr_drones);
+    vector<vector<Point2f> > partitioned(nrClusters);
     for(unsigned int i = 0; i < points.size(); i++) {
         int cluster = labels.at<int>(i);
         partitioned[cluster].push_back(points[i]);
@@ -97,11 +98,27 @@ DroneDetector::DroneState DroneDetector::GetState(vector<Point2f> leds) {
 }
 
 void DroneDetector::UpdateStates(std::vector<DroneState>& states) {
+    // First run there are no previous states
     if(previousStates.size() == 0) {
-        // First run there are no previous states
+        if(states.size() != nrDrones) {
+            // Not all drones are detected yet, wait for exposure tuning
+            return;
+        }
+        for(unsigned int i = 0; i < states.size(); i++) {
+            states[i].id = i;
+        }
         previousStates = states;
         return;
     }
+
+    /*
+    *  There must always be at least as many previous states as there are states now.
+    *  If this condition is broken, it's impossible to assign each state an ID,
+    *  and previousStates[minIndex] with minIndex = -1 will result in a memory error.
+    */
+    assert(states.size() <= previousStates.size());
+
+    // Replace any old states with new ones if found
     for(unsigned int i = 0; i < states.size(); i++) {
         int minIndex = -1;
         float minDistance = std::numeric_limits<float>::max();
@@ -116,10 +133,12 @@ void DroneDetector::UpdateStates(std::vector<DroneState>& states) {
         // Delete the state to avoid assigning it twice
         previousStates.erase(previousStates.begin() + minIndex);
     }
-    previousStates = states;
+
+    // Keep the old states, insert the new ones (duplicate have already been removed)
+    previousStates.insert(previousStates.end(), states.begin(), states.end());
 }
 
-vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* deltaIntensity) {
+vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     // Find contours in frame
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -128,7 +147,18 @@ vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* delt
     threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
     findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-    if (contours.size() == nr_drones * NR_LEDS) {
+    if (contours.size() > NR_LEDS * nrDrones) {
+        *deltaExposure = -DELTA_EXPOSURE;
+        return vector<DroneState>();
+    }
+    else if (contours.size() < NR_LEDS * nrDrones) {
+        *deltaExposure = DELTA_EXPOSURE;
+    }
+    else {
+        *deltaExposure = 0;
+    }
+
+    if (contours.size() % NR_LEDS == 0) {
         // Turn contours into points 
         vector<Point2f> leds(contours.size());
         for(unsigned int i = 0; i < contours.size(); i++) {
@@ -138,7 +168,7 @@ vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* delt
 
         vector<vector<Point2f> > partitioned = PartitionPoints(leds);
         vector<DroneState> states;
-        states.reserve(nr_drones);
+        states.reserve(partitioned.size());
         for(unsigned int i = 0; i < partitioned.size(); i++) {
             states.push_back(GetState(partitioned[i]));
         }
@@ -147,12 +177,6 @@ vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* delt
 
     }
     else {
-        if(contours.size() > nr_drones * NR_LEDS) {
-            *deltaIntensity = -DELTA_EXPOSURE;
-        } 
-        else {
-            *deltaIntensity = DELTA_EXPOSURE; 
-        }
-        return vector<DroneDetector::DroneState>();
+        return vector<DroneState>();
     }
 }

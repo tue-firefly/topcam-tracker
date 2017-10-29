@@ -11,13 +11,13 @@ class DroneDetector {
             double psi;
         };
 
-        DroneDetector(unsigned int nr_drones);
+        DroneDetector(unsigned int nrDrones);
 			
         DroneState GetState(std::vector<cv::Point2f> leds);
         std::vector<DroneState> FindDrones(cv::Mat frame, int* deltaIntensity);
 
     private:
-        unsigned int nr_drones;	
+        unsigned int nrDrones;	
         std::vector<DroneState> previousStates;
 
         std::vector< std::vector<cv::Point2f> > PartitionPoints(std::vector<cv::Point2f> points); 
