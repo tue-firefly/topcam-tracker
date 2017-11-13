@@ -7,6 +7,7 @@
 
 #include "FrameObserver.h"
 #include "ApiController.h"
+#include "DroneState.h"
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -26,7 +27,12 @@ namespace Examples {
 //
 FrameObserver::FrameObserver( CameraPtr pCamera, const std::string& ip, const std::string& port)
     :   IFrameObserver( pCamera )
+<<<<<<< Updated upstream
     ,   udp(io_service, ip, port)
+=======
+    ,   udp(ip, port)
+    ,   detector(nrDrones)
+>>>>>>> Stashed changes
 {
     exposure = 6000;
 }
@@ -40,10 +46,8 @@ FrameObserver::FrameObserver( CameraPtr pCamera, const std::string& ip, const st
 //
 void FrameObserver::FrameReceived( const FramePtr pFrame )
 {
-    std::cout << "Frame\n";
     if(! SP_ISNULL( pFrame ) )
     {
-
         VmbUint32_t nWidth = 0;
         VmbUint32_t nHeight = 0;
         VmbUchar_t *pImage = NULL;
@@ -57,6 +61,7 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
             Mat frame;
             frame.create(nHeight, nWidth, CV_8UC1);
             memcpy(frame.data, pImage, nWidth * nHeight);
+<<<<<<< Updated upstream
             DroneDetector::DroneLocation loc = detector.FindDrone(frame);
 
             if (loc.deltaIntensity == 0) {
@@ -65,6 +70,13 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
                 data[1] = loc.y;
                 data[2] = loc.psi;
                 udp.send(data);
+=======
+            int deltaExposure = 0;
+            std::vector<DroneState> states = detector.FindDrones(frame, &deltaExposure);
+
+            for(unsigned int i = 0; i < states.size(); i++) {
+		udp.send_state(states[i]);
+>>>>>>> Stashed changes
             }
             // Could not detect the drone, tweak intensity and hope the next frame will be better
             else {

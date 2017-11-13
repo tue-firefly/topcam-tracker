@@ -10,6 +10,7 @@ double oldTime;
 
 using namespace cv;
 
+<<<<<<< Updated upstream
 DroneDetector::DroneLocation DroneDetector::FindDrone(Mat frame) {
     std::vector<std::vector<Point> > contours;
     std::vector<Vec4i> hierarchy;
@@ -30,6 +31,56 @@ DroneDetector::DroneLocation DroneDetector::FindDrone(Mat frame) {
             circle(frame, leds[i], radius, Scalar(255, 0, 0), 2, 8, 0);
             xSum += leds[i].x;
             ySum += leds[i].y;
+=======
+DroneDetector::DroneDetector(unsigned int nrDrones) {
+    this->nrDrones = nrDrones;
+}
+
+vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points) {
+    if(points.size() == 0) {
+        vector<vector<Point2f> > empty(0);
+	return empty;
+    }
+    Mat labels, centers;
+    int nrClusters = points.size() / NR_LEDS;
+    kmeans(points, nrClusters, labels, 
+        TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 10, 1.0),
+        3, KMEANS_PP_CENTERS, centers);
+    vector<vector<Point2f> > partitioned(nrClusters);
+    for(unsigned int i = 0; i < points.size(); i++) {
+        int cluster = labels.at<int>(i);
+        partitioned[cluster].push_back(points[i]);
+    }
+    return partitioned;    
+}
+
+DroneState DroneDetector::GetState(vector<Point2f> leds) {
+    float xSum = 0;
+    float ySum = 0;
+
+    // Calculate average of leds
+    for(unsigned int i = 0; i < leds.size(); i++ ) {
+        xSum += leds[i].x;
+        ySum += leds[i].y;
+    }
+    double xAvg = xSum / leds.size();
+    double yAvg = ySum / leds.size();
+    Point2f avg(xAvg, yAvg);
+
+    // Find the two outermost LEDs 
+    vector<Point2f> outerLeds(2);
+    double max1 = 0;
+    double max2 = 0;
+    for(unsigned int i = 0; i < leds.size(); i++) {
+        double max = norm(Mat(avg), Mat(leds[i]));
+        if (max > max1 && max1 <= max2) {
+            outerLeds[0] = leds[i];
+            max1 = max;
+        } 
+        else if (max > max2 && max2 < max1) {
+            outerLeds[1] = leds[i];
+            max2 = max;
+>>>>>>> Stashed changes
         }
         double xAvg = xSum / contours.size();
         double yAvg = ySum / contours.size();
@@ -87,6 +138,7 @@ DroneDetector::DroneLocation DroneDetector::FindDrone(Mat frame) {
             oldTime = time;
         }
 
+<<<<<<< Updated upstream
         std::cout << "x: " << physicalCenter.x << ", y: " << physicalCenter.y << "psi: " << (psi / M_PI * 180) << "\n";
 	DroneLocation loc;
 	loc.deltaIntensity = 0;
@@ -96,6 +148,23 @@ DroneDetector::DroneLocation DroneDetector::FindDrone(Mat frame) {
 	
         // According to conventions
         return loc; 
+=======
+vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
+    // Find contours in frame
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    Mat thresh;
+    
+    threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
+    findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
+
+    if (contours.size() > NR_LEDS * nrDrones) {
+        *deltaExposure = -DELTA_EXPOSURE;
+        return vector<DroneState>();
+    }
+    else if (contours.size() < NR_LEDS * nrDrones) {
+        *deltaExposure = DELTA_EXPOSURE;
+>>>>>>> Stashed changes
     }
     else {
 	DroneLocation loc;
