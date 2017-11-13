@@ -27,10 +27,6 @@ public:
 		socket_.close();
 	}
 
-<<<<<<< Updated upstream
-	void send(const boost::array<double, 3>& msg) {
-		socket_.send_to(boost::asio::buffer(msg), endpoint_);
-=======
 	void send(boost::asio::mutable_buffers_1 msg) {
 		socket_.send_to(msg, endpoint_);
 	}
@@ -42,12 +38,11 @@ public:
 		data->y = state.pos.y;
 		data->psi = state.psi;
 		return boost::asio::buffer((void *) data, sizeof(FlatState));
->>>>>>> Stashed changes
 	}
 	
 	void send_state(DroneState state) {
 		boost::asio::mutable_buffers_1 buf = serialize(state);
-        send(buf);
+	        send(buf);
 		free(boost::asio::buffer_cast<void *>(buf));
     }
 
@@ -56,9 +51,6 @@ private:
 	boost::asio::io_service& io_service_;
 	udp::socket socket_;
 	udp::endpoint endpoint_;
-<<<<<<< Updated upstream
-};
-=======
 	
 	struct __attribute__ ((packed)) FlatState {
 		uint32_t id;
@@ -69,4 +61,3 @@ private:
 };
 
 #endif
->>>>>>> Stashed changes

@@ -23,7 +23,7 @@ public:
     // Parameters:
     //  [in]    pCamera             The camera the frame was queued at
     //
-    FrameObserver(CameraPtr pCamera, const std::string& ip, const std::string& port);
+    FrameObserver(CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port);
     
     //
     // This is our callback routine that will be executed on every received frame.
@@ -36,14 +36,9 @@ public:
 
 private:
     UDPClient                   udp;
-<<<<<<< Updated upstream
     DroneDetector		detector;
     boost::asio::io_service 	io_service;
     double 			exposure;
-=======
-    DroneDetector		        detector;
-    double 			            exposure;
->>>>>>> Stashed changes
 };
 
 }}} // namespace AVT::VmbAPI::Examples

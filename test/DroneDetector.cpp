@@ -1,5 +1,6 @@
 #define BOOST_TEST_DYN_LINK
 #include <boost/test/unit_test.hpp>
+#include <iostream>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
@@ -7,6 +8,7 @@
 #include "../src/DroneState.h"
 
 using namespace cv;
+using namespace std;
 
 BOOST_AUTO_TEST_CASE(no_drone)
 {
@@ -25,13 +27,6 @@ BOOST_AUTO_TEST_CASE(detect_drone)
     Mat image = imread("drone.png", CV_LOAD_IMAGE_GRAYSCALE);
     Mat grey;
     image.convertTo(grey, CV_8UC1);
-<<<<<<< Updated upstream
-    DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrone(grey);
-    BOOST_CHECK(loc.deltaIntensity == 0);
-}
-
-=======
     DroneDetector detector(1);
     int deltaExposure = 0;
     std::vector<DroneState> states = detector.FindDrones(grey, &deltaExposure);
@@ -102,41 +97,27 @@ BOOST_AUTO_TEST_CASE(detect_drones_partial)
     BOOST_CHECK_EQUAL(found2, 2);
 }
 
-
->>>>>>> Stashed changes
-
 BOOST_AUTO_TEST_CASE(too_many)
 {
     Mat image = imread("too_many.png", CV_LOAD_IMAGE_GRAYSCALE);
     Mat grey;
     image.convertTo(grey, CV_8UC1);
-<<<<<<< Updated upstream
-    DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrone(grey);
-    BOOST_CHECK(loc.deltaIntensity == -100);
-=======
     DroneDetector detector(1);
     int deltaExposure = 0;
     std::vector<DroneState> states = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK_EQUAL(deltaExposure, -100);
     BOOST_CHECK_EQUAL(states.size(), 0);
->>>>>>> Stashed changes
 }
+
 
 BOOST_AUTO_TEST_CASE(too_few)
 {
     Mat image = imread("too_few.png", CV_LOAD_IMAGE_GRAYSCALE);
     Mat grey;
     image.convertTo(grey, CV_8UC1);
-<<<<<<< Updated upstream
-    DroneDetector detector;
-    DroneDetector::DroneLocation loc = detector.FindDrone(grey);
-    BOOST_CHECK(loc.deltaIntensity == 100);
-=======
     DroneDetector detector(1);
     int deltaExposure = 0;
     std::vector<DroneState> states = detector.FindDrones(grey, &deltaExposure);
     BOOST_CHECK_EQUAL(deltaExposure, 100);
     BOOST_CHECK_EQUAL(states.size(), 0);
->>>>>>> Stashed changes
 }

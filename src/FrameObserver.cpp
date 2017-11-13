@@ -12,6 +12,9 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include <memory>
+#include <boost/asio.hpp>
+
 using namespace cv;
 
 namespace AVT {
@@ -25,14 +28,10 @@ namespace Examples {
 // Parameters:
 //  [in]    pCamera             The camera the frame was queued at
 //
-FrameObserver::FrameObserver( CameraPtr pCamera, const std::string& ip, const std::string& port)
+FrameObserver::FrameObserver( CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port)
     :   IFrameObserver( pCamera )
-<<<<<<< Updated upstream
-    ,   udp(io_service, ip, port)
-=======
     ,   udp(ip, port)
     ,   detector(nrDrones)
->>>>>>> Stashed changes
 {
     exposure = 6000;
 }
@@ -61,26 +60,15 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
             Mat frame;
             frame.create(nHeight, nWidth, CV_8UC1);
             memcpy(frame.data, pImage, nWidth * nHeight);
-<<<<<<< Updated upstream
-            DroneDetector::DroneLocation loc = detector.FindDrone(frame);
-
-            if (loc.deltaIntensity == 0) {
-                boost::array<double, 3> data;
-                data[0] = loc.x;
-                data[1] = loc.y;
-                data[2] = loc.psi;
-                udp.send(data);
-=======
             int deltaExposure = 0;
             std::vector<DroneState> states = detector.FindDrones(frame, &deltaExposure);
 
             for(unsigned int i = 0; i < states.size(); i++) {
 		udp.send_state(states[i]);
->>>>>>> Stashed changes
             }
             // Could not detect the drone, tweak intensity and hope the next frame will be better
-            else {
-                exposure += loc.deltaIntensity;
+            if(deltaExposure != 0) {
+                exposure += deltaExposure;
                 if (exposure < 1000) {
                     exposure = 1000;
                 }

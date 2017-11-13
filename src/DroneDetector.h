@@ -6,16 +6,6 @@
 
 class DroneDetector {
     public:
-<<<<<<< Updated upstream
-        struct DroneLocation {
-            int deltaIntensity;
-            double x;
-            double y;
-            double psi;
-        };
-        
-        DroneLocation FindDrone(cv::Mat frame);
-=======
         DroneDetector(unsigned int nrDrones);
 			
         DroneState GetState(std::vector<cv::Point2f> leds);
@@ -27,8 +17,6 @@ class DroneDetector {
 
         std::vector< std::vector<cv::Point2f> > PartitionPoints(std::vector<cv::Point2f> points); 
         void UpdateStates(std::vector<DroneState>& states);
-
->>>>>>> Stashed changes
 };
 
 #endif

@@ -90,7 +90,7 @@ void ApiController::ShutDown()
 // Returns:
 //  An API status code
 //
-VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& cameraID, const std::string& ip, const std::string& port )
+VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& cameraID, unsigned int nrDrones, const std::string& ip, const std::string& port )
 {
     // Open the desired camera by its ID
     VmbErrorType res = m_system.OpenCameraByID( cameraID.c_str(), VmbAccessModeFull, m_pCamera );
@@ -122,7 +122,7 @@ VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& 
             {
 		std::cout << "port: " << port << "\n";
                 // Create a frame observer for this camera (This will be wrapped in a shared_ptr so we don't delete it)
-                m_pFrameObserver = new FrameObserver(m_pCamera, ip, port);
+                m_pFrameObserver = new FrameObserver(m_pCamera, nrDrones, ip, port);
                 // Start streaming
                 res = m_pCamera->StartContinuousImageAcquisition( NUM_FRAMES, IFrameObserverPtr( m_pFrameObserver ));
             }

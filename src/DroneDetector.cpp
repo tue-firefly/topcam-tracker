@@ -3,35 +3,25 @@
 #include <opencv2/imgproc.hpp>
 
 #include <iostream>
+#include <limits>
 #include <ctime>
+#include <algorithm> 
 
-double oldPsi;
-double oldTime;
+// The soccer field is 8 meters wide on the Y axis, and the camera resolution is 1920x1080    
+#define PIXELS2METERS (8.0/1080.0)
+// Correspond to the coordinates of the center of the field, as seen by the camera
+#define X_OFF 7.0
+#define Y_OFF 3.8
+// Maximum difference between two psi measurements, in radians (0.35 radians is about 20 degrees)
+#define PSI_MAX_DIFF 0.35
+// If detection fails, change the exposure by this amount
+#define DELTA_EXPOSURE 100
+// Number of leds per drone
+#define NR_LEDS 4
 
 using namespace cv;
+using namespace std;
 
-<<<<<<< Updated upstream
-DroneDetector::DroneLocation DroneDetector::FindDrone(Mat frame) {
-    std::vector<std::vector<Point> > contours;
-    std::vector<Vec4i> hierarchy;
-    Mat thresh;
-    
-    threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
-    findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
-    std::cout << "Found " << contours.size() << " contours\n";
-    if (contours.size() == 4) {
-        std::vector<Point2f> leds(contours.size());
-        float xSum = 0;
-        float ySum = 0;
-
-        // Calculate weighted average of contours
-        for(unsigned int i = 0; i < contours.size(); i++ ) {
-            float radius;
-            minEnclosingCircle((Mat)contours[i], leds[i], radius);
-            circle(frame, leds[i], radius, Scalar(255, 0, 0), 2, 8, 0);
-            xSum += leds[i].x;
-            ySum += leds[i].y;
-=======
 DroneDetector::DroneDetector(unsigned int nrDrones) {
     this->nrDrones = nrDrones;
 }
@@ -80,7 +70,6 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
         else if (max > max2 && max2 < max1) {
             outerLeds[1] = leds[i];
             max2 = max;
->>>>>>> Stashed changes
         }
         double xAvg = xSum / contours.size();
         double yAvg = ySum / contours.size();
@@ -101,55 +90,78 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
                 max2 = max;
             }
         }
-        Point2f center = (outerLeds[0] + outerLeds[1]) / 2;
-        Point2f direction = avg - center;
+    }
+    Point2f center = (outerLeds[0] + outerLeds[1]) / 2;
+    Point2f direction = avg - center;
 
-        double PIXELS2METERS = 8.0/1080.0;
-        double X_OFF = 7.0;
-        double Y_OFF = 3.8;
+    Point2f offset(X_OFF, Y_OFF);
+    Point2f physicalCenter = center * PIXELS2METERS - offset;
 
-        Point2f offset(X_OFF, Y_OFF);
-        Point2f physicalCenter = center * PIXELS2METERS - offset;
+    Vec4f line;
+    fitLine(leds, line, CV_DIST_L2, 0, 0.01, 0.01);
 
-        Vec4f line;
-        fitLine(leds, line, CV_DIST_L2, 0, 0.01, 0.01);
+    Point2f lineDirection = Point2f(line[0], line[1]);
+    double psi;
+    if(direction.dot(lineDirection) > 0)
+        psi = atan2(line[1], line[0]);
+    else
+        psi = atan2(-line[1], -line[0]);
 
-        Point2f lineDirection = Point2f(line[0], line[1]);
-        double psi;
-        if(direction.dot(lineDirection) > 0)
-            psi = atan2(line[1], line[0]);
-        else
-            psi = atan2(-line[1], -line[0]);
+    Point2f dir(cos(psi), sin(psi));
 
-        float l = 100;
+    psi = fmod(psi + (M_PI/2), 2*M_PI);
 
-        Point2f dir(cos(psi), sin(psi));
-        cv::arrowedLine(frame, center, center + dir * l, Scalar(255, 0, 0));
+    DroneState state;
+    // According to conventions
+    Point2f pos(-physicalCenter.y, physicalCenter.x);
+    state.pos = pos;
+    state.psi = psi;
+    
+    return state; 
+}
 
-        // Offset for mounting
-        psi = fmod(psi + (M_PI/2), 2*M_PI);
-        double time = std::clock() / (double) CLOCKS_PER_SEC;
-        if (time < oldTime + 1 && abs(psi-oldPsi) > 0.35 && abs(psi-oldPsi) < 5.9) {
-            psi = oldPsi;
-            std::cout << "========== PSI INVALID ========\n";
+void DroneDetector::UpdateStates(std::vector<DroneState>& states) {
+    // First run there are no previous states
+    if(previousStates.size() == 0) {
+        if(states.size() != nrDrones) {
+            // Not all drones are detected yet, wait for exposure tuning
+            return;
         }
-        else {
-            oldPsi = psi;
-            oldTime = time;
+        for(unsigned int i = 0; i < states.size(); i++) {
+            states[i].id = i;
         }
+        previousStates = states;
+        return;
+    }
 
-<<<<<<< Updated upstream
-        std::cout << "x: " << physicalCenter.x << ", y: " << physicalCenter.y << "psi: " << (psi / M_PI * 180) << "\n";
-	DroneLocation loc;
-	loc.deltaIntensity = 0;
-	loc.x = -physicalCenter.y;
-	loc.y = physicalCenter.x;
-	loc.psi = psi;
-	
-        // According to conventions
-        return loc; 
-=======
-vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
+    /*
+    *  There must always be at least as many previous states as there are states now.
+    *  If this condition is broken, it's impossible to assign each state an ID,
+    *  and previousStates[minIndex] with minIndex = -1 will result in a memory error.
+    */
+    assert(states.size() <= previousStates.size());
+
+    // Replace any old states with new ones if found
+    for(unsigned int i = 0; i < states.size(); i++) {
+        int minIndex = -1;
+        float minDistance = std::numeric_limits<float>::max();
+        for(unsigned int j = 0; j < previousStates.size(); j++) {
+            float distance = norm(Mat(states[i].pos), Mat(previousStates[j].pos));
+            if(distance < minDistance) {
+                minIndex = j;
+                minDistance = distance;
+            }    
+        }
+        states[i].id = previousStates[minIndex].id;
+        // Delete the state to avoid assigning it twice
+        previousStates.erase(previousStates.begin() + minIndex);
+    }
+
+    // Keep the old states, insert the new ones (duplicate have already been removed)
+    previousStates.insert(previousStates.end(), states.begin(), states.end());
+}
+
+vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     // Find contours in frame
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
@@ -164,16 +176,30 @@ vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     }
     else if (contours.size() < NR_LEDS * nrDrones) {
         *deltaExposure = DELTA_EXPOSURE;
->>>>>>> Stashed changes
     }
     else {
-	DroneLocation loc;
-        if(contours.size() > 4) {
-            loc.deltaIntensity = -100;
+        *deltaExposure = 0;
+    }
+
+    if (contours.size() % NR_LEDS == 0) {
+        // Turn contours into points 
+        vector<Point2f> leds(contours.size());
+        for(unsigned int i = 0; i < contours.size(); i++) {
+            float radius;
+            minEnclosingCircle(contours[i], leds[i], radius);
         } 
-        else {
-            loc.deltaIntensity = 100; 
+
+        vector<vector<Point2f> > partitioned = PartitionPoints(leds);
+        vector<DroneState> states;
+        states.reserve(partitioned.size());
+        for(unsigned int i = 0; i < partitioned.size(); i++) {
+            states.push_back(GetState(partitioned[i]));
         }
-	return loc;
+        UpdateStates(states);
+        return states;
+
+    }
+    else {
+        return vector<DroneState>();
     }
 }
