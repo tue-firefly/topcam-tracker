@@ -58,7 +58,7 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
     Point2f avg(xAvg, yAvg);
 
     // Find the two outermost LEDs 
-    vector<Point2f> outerLeds(2);
+    std::vector<Point2f> outerLeds(2);
     double max1 = 0;
     double max2 = 0;
     for(unsigned int i = 0; i < leds.size(); i++) {
@@ -71,26 +71,8 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
             outerLeds[1] = leds[i];
             max2 = max;
         }
-        double xAvg = xSum / contours.size();
-        double yAvg = ySum / contours.size();
-        Point2f avg(xAvg, yAvg);
-
-        // Find the two outermost LEDs 
-        std::vector<Point2f> outerLeds(2);
-        double max1 = 0;
-        double max2 = 0;
-        for(unsigned int i = 0; i < leds.size(); i++) {
-            double max = norm(Mat(avg), Mat(leds[i]));
-            if (max > max1 && max1 <= max2) {
-                outerLeds[0] = leds[i];
-                max1 = max;
-            } 
-            else if (max > max2 && max2 < max1) {
-                outerLeds[1] = leds[i];
-                max2 = max;
-            }
-        }
     }
+
     Point2f center = (outerLeds[0] + outerLeds[1]) / 2;
     Point2f direction = avg - center;
 
@@ -161,7 +143,7 @@ void DroneDetector::UpdateStates(std::vector<DroneState>& states) {
     previousStates.insert(previousStates.end(), states.begin(), states.end());
 }
 
-vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
+vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     // Find contours in frame
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;

@@ -5,7 +5,6 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include "DroneState.h"
-#include <cstdint>
 
 using boost::asio::ip::udp;
 
@@ -53,7 +52,7 @@ private:
 	udp::endpoint endpoint_;
 	
 	struct __attribute__ ((packed)) FlatState {
-		uint32_t id;
+		unsigned int id;
 		double x;
 		double y;
 		double psi;
