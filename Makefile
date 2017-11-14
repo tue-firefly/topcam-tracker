@@ -43,12 +43,12 @@ TEST_LIBS   	    = $(OPENCV_LIBS) \
 					  -lpthread \
                       $(BOOST_TEST_LIBS)
 
-CFLAGS              = -std=c++98 -Wall -Wextra -Werror \
+CFLAGS              = -std=c++14 -Wall -Wextra -Werror -Wpedantic \
                       $(COMMON_CFLAGS) \
                       $(VIMBACPP_CFLAGS) \
                       $(OPENCV_CFLAGS)
 
-TEST_CFLAGS 	    = -Wall -Wextra -Werror \
+TEST_CFLAGS 	    = -std=c++14 -Wall -Wextra -Werror -Wpedantic \
 		      $(OPENCV_CFLAGS)
 
 OBJ_FILES           = $(OBJ_DIR)/DroneDetector.o \
