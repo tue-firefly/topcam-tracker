@@ -54,10 +54,7 @@ echo "Created $(readlink -e $DOTENV_PATH)"
 if [ "$DISTRO" = "arch" ]; then
 	PACKAGES="opencv hdf5 boost gcc make pkg-config cowsay"
 	sudo pacman -Sy --noconfirm $PACKAGES || echo "Failed to install packages ($PACKAGES). Please install them manually"
-elif [ "$DISTRO" = "zesty" ]; then
-	sudo apt-get update
-	sudo apt-get install -y libopencv-dev libboost-all-dev build-essential g++ cowsay
-elif [ "$DISTRO" = "xenial" ]; then
+elif [ "$DISTRO" = "xenial" ] || [ "$DISTRO" = "zesty"  ]; then
 	sudo add-apt-repository -y ppa:timsc/opencv-3.3
 	sudo apt-get update
 	sudo apt-get install -y libopencv-dev libboost-all-dev build-essential g++ cowsay
