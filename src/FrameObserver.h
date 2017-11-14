@@ -36,9 +36,9 @@ public:
 
 private:
     UDPClient                   udp;
-    DroneDetector		        detector;
+    DroneDetector		detector;
     boost::asio::io_service 	io_service;
-    double 			            exposure;
+    double 			exposure;
 };
 
 }}} // namespace AVT::VmbAPI::Examples

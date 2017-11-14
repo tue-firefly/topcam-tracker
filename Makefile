@@ -34,12 +34,14 @@ INCLUDE_DIRS        = -I$(SOURCE_DIR)
 LIBS                = $(VIMBACPP_LIBS) \
                       $(OPENCV_LIBS) \
                       $(BOOST_LIBS) \
-		      -lrt \
+		              -lrt \
                       -pthread \
 
-TEST_LIBS	    = $(OPENCV_LIBS) \
-		      -lopencv_imgcodecs \
-		      $(BOOST_TEST_LIBS)
+TEST_LIBS   	    = $(OPENCV_LIBS) \
+                      -lopencv_imgcodecs \
+                      -lboost_system \
+					  -lpthread \
+                      $(BOOST_TEST_LIBS)
 
 CFLAGS              = -std=c++98 -Wall -Wextra -Werror \
                       $(COMMON_CFLAGS) \
@@ -55,7 +57,7 @@ OBJ_FILES           = $(OBJ_DIR)/DroneDetector.o \
                       $(OBJ_DIR)/program.o
 
 TEST_OBJ_FILES	    = $(OBJ_DIR)/DroneDetector.o \
-		      $(TEST_DIR)/DroneDetector.o
+                      $(TEST_DIR)/main.o
 
 DEPENDENCIES        = VimbaCPP
 

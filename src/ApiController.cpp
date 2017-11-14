@@ -120,6 +120,7 @@ VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& 
             res = PrepareCamera();
             if ( VmbErrorSuccess == res )
             {
+		std::cout << "port: " << port << "\n";
                 // Create a frame observer for this camera (This will be wrapped in a shared_ptr so we don't delete it)
                 m_pFrameObserver = new FrameObserver(m_pCamera, nrDrones, ip, port);
                 // Start streaming

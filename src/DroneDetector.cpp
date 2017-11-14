@@ -27,6 +27,10 @@ DroneDetector::DroneDetector(unsigned int nrDrones) {
 }
 
 vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points) {
+    if(points.size() == 0) {
+        vector<vector<Point2f> > empty(0);
+	return empty;
+    }
     Mat labels, centers;
     int nrClusters = points.size() / NR_LEDS;
     kmeans(points, nrClusters, labels, 
@@ -40,7 +44,7 @@ vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points)
     return partitioned;    
 }
 
-DroneDetector::DroneState DroneDetector::GetState(vector<Point2f> leds) {
+DroneState DroneDetector::GetState(vector<Point2f> leds) {
     float xSum = 0;
     float ySum = 0;
 
@@ -54,7 +58,7 @@ DroneDetector::DroneState DroneDetector::GetState(vector<Point2f> leds) {
     Point2f avg(xAvg, yAvg);
 
     // Find the two outermost LEDs 
-    vector<Point2f> outerLeds(2);
+    std::vector<Point2f> outerLeds(2);
     double max1 = 0;
     double max2 = 0;
     for(unsigned int i = 0; i < leds.size(); i++) {
@@ -68,6 +72,7 @@ DroneDetector::DroneState DroneDetector::GetState(vector<Point2f> leds) {
             max2 = max;
         }
     }
+
     Point2f center = (outerLeds[0] + outerLeds[1]) / 2;
     Point2f direction = avg - center;
 
@@ -138,13 +143,17 @@ void DroneDetector::UpdateStates(std::vector<DroneState>& states) {
     previousStates.insert(previousStates.end(), states.begin(), states.end());
 }
 
-vector<DroneDetector::DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
+vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     // Find contours in frame
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     Mat thresh;
     
     threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
+    if(thresh.empty()){
+        *deltaExposure = DELTA_EXPOSURE;
+        return vector<DroneState>();
+    }
     findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
     if (contours.size() > NR_LEDS * nrDrones) {

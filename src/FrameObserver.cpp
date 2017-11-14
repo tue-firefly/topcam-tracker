@@ -7,6 +7,7 @@
 
 #include "FrameObserver.h"
 #include "ApiController.h"
+#include "DroneState.h"
 
 #include <opencv2/highgui.hpp>
 #include <opencv2/imgproc.hpp>
@@ -29,7 +30,7 @@ namespace Examples {
 //
 FrameObserver::FrameObserver( CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port)
     :   IFrameObserver( pCamera )
-    ,   udp(io_service, ip, port)
+    ,   udp(ip, port)
     ,   detector(nrDrones)
 {
     exposure = 6000;
@@ -44,10 +45,8 @@ FrameObserver::FrameObserver( CameraPtr pCamera, unsigned int nrDrones, const st
 //
 void FrameObserver::FrameReceived( const FramePtr pFrame )
 {
-    std::cout << "Frame\n";
     if(! SP_ISNULL( pFrame ) )
     {
-
         VmbUint32_t nWidth = 0;
         VmbUint32_t nHeight = 0;
         VmbUchar_t *pImage = NULL;
@@ -62,20 +61,10 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
             frame.create(nHeight, nWidth, CV_8UC1);
             memcpy(frame.data, pImage, nWidth * nHeight);
             int deltaExposure = 0;
-            std::vector<DroneDetector::DroneState> states = detector.FindDrones(frame, &deltaExposure);
+            std::vector<DroneState> states = detector.FindDrones(frame, &deltaExposure);
 
             for(unsigned int i = 0; i < states.size(); i++) {
-                std::vector<boost::asio::const_buffer> buffers;
-                unsigned int id = states[i].id;
-                double x = states[i].pos.x;
-                double y = states[i].pos.y;
-                double psi = states[i].psi;
-                buffers.push_back(boost::asio::buffer(&id, sizeof(id)));
-                buffers.push_back(boost::asio::buffer(&x, sizeof(x)));
-                buffers.push_back(boost::asio::buffer(&y, sizeof(y)));
-                buffers.push_back(boost::asio::buffer(&psi, sizeof(psi)));
-                udp.send(buffers);
-                
+		udp.send_state(states[i]);
             }
             // Could not detect the drone, tweak intensity and hope the next frame will be better
             if(deltaExposure != 0) {
