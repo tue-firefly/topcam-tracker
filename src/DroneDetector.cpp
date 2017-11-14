@@ -150,6 +150,10 @@ vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     Mat thresh;
     
     threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
+    if(thresh.empty()){
+        *deltaExposure = DELTA_EXPOSURE;
+        return vector<DroneState>();
+    }
     findContours(thresh, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
     if (contours.size() > NR_LEDS * nrDrones) {
