@@ -74,7 +74,7 @@ $(TEST_DIR)/test: $(TEST_OBJ_FILES)
 	g++ $(ARCH_CFLAGS) -o $(TEST_DIR)/test $(TEST_OBJ_FILES) $(TEST_LIBS)
 
 test: $(TEST_DIR)/test
-	cd $(TEST_DIR) && ./test
+	python3 test/tests.py
 
 clean:
 	rm bin -rf
