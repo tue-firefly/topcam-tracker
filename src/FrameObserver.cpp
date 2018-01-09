@@ -75,9 +75,10 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
                 // Colors red, green and blue for drones 1, 2, 3 respectively
                 // if more drones are detected they are white
                 Scalar color(
-                    i == 2 || i > 2 ? 255 : 0, 
-                    i == 1 || i > 2 ? 255 : 0, 
-                    i == 0 || i > 2 ? 255 : 0);
+
+                    states[i].id == 2 || i > 2 ? 255 : 0, 
+                    states[i].id == 1 || i > 2 ? 255 : 0, 
+                    states[i].id == 0 || i > 2 ? 255 : 0);
                 circle(colored, center, 5, color, 3, 8);
 
                 Point start = center;
@@ -85,7 +86,9 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
                 double psi = fmod(states[i].psi - (M_PI/2), 2*M_PI);
                 end.x += cos(psi) * 100;
                 end.y += sin(psi) * 100;
-                arrowedLine(colored, start, end, color, 1, 8);
+                arrowedLine(colored, start, end, color, 1, 8); 
+
+		std::cout << "x: " << states[i].pos.x << ", y: " << states[i].pos.y << ", psi: " << states[i].psi << std::endl;
 
                 // Send states over udp
                 udp.send_state(states[i]);

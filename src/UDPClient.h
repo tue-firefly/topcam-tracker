@@ -52,7 +52,7 @@ private:
 	udp::endpoint endpoint_;
 	
 	struct __attribute__ ((packed)) FlatState {
-		unsigned int id;
+		double id;
 		double x;
 		double y;
 		double psi;

@@ -43,7 +43,7 @@ TEST_LIBS   	    = $(OPENCV_LIBS) \
 					  -lpthread \
                       $(BOOST_TEST_LIBS)
 
-CFLAGS              = -std=c++14 -Wall -Wextra -Werror -Wpedantic \
+CFLAGS              = -std=c++14 -Wall -Wextra -Werror -Wpedantic -g \
                       $(COMMON_CFLAGS) \
                       $(VIMBACPP_CFLAGS) \
                       $(OPENCV_CFLAGS)
