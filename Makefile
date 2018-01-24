@@ -54,6 +54,7 @@ TEST_CFLAGS 	    = -std=c++14 -Wall -Wextra -Werror -Wpedantic \
 OBJ_FILES           = $(OBJ_DIR)/DroneDetector.o \
                       $(OBJ_DIR)/ApiController.o \
                       $(OBJ_DIR)/FrameObserver.o \
+                      $(OBJ_DIR)/crc16.o \
                       $(OBJ_DIR)/program.o
 
 TEST_OBJ_FILES	    = $(OBJ_DIR)/DroneDetector.o \

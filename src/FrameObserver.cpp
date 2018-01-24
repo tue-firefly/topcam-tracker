@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <ctime>
+#include <chrono>
 
 #include "FrameObserver.h"
 #include "ApiController.h"
@@ -51,6 +52,11 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
         VmbUint32_t nHeight = 0;
         VmbUchar_t *pImage = NULL;
 
+        // Get timestamp in microseconds.
+        // Consider this point in the code as the closest one to the real state of the drone.
+        auto timestamp = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now());
+        uint64_t timestamp_us = timestamp.time_since_epoch().count();
+
         pFrame->GetWidth( nWidth );
         pFrame->GetHeight( nHeight );
         pFrame->GetImage( pImage );
@@ -66,6 +72,9 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
             Mat colored;
             cvtColor(frame, colored, CV_GRAY2RGB, 0);
             for(unsigned int i = 0; i < states.size(); i++) {
+            	// Add timestamp to DroneState
+            	states[i].timestamp = timestamp_us;
+
                 // Draw the states
                 //  Fix conventions
                 Point2f center(states[i].pos.y, -states[i].pos.x);
@@ -88,7 +97,7 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
                 end.y += sin(psi) * 100;
                 arrowedLine(colored, start, end, color, 1, 8); 
 
-		std::cout << "x: " << states[i].pos.x << ", y: " << states[i].pos.y << ", psi: " << states[i].psi << std::endl;
+                std::cout << "timestamp: " << states[i].timestamp << ", x: " << states[i].pos.x << ", y: " << states[i].pos.y << ", psi: " << states[i].psi << std::endl;
 
                 // Send states over udp
                 udp.send_state(states[i]);
