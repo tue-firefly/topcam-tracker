@@ -15,3 +15,8 @@ obj/
 
 # test binary
 test/test
+
+# Eclipse project files
+.cproject
+.project
+.settings/
