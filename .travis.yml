@@ -8,9 +8,7 @@ services:
 install:
 - docker build . -t arch -f dockerfiles/arch
 - docker build . -t xenial -f dockerfiles/xenial
-- docker build . -t zesty -f dockerfiles/zesty
 
 script:
 - docker run -t arch make test
 - docker run -t xenial make test
-- docker run -t zesty make test
