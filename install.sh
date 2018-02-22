@@ -17,9 +17,6 @@ elif [ -f "/etc/lsb-release" ]; then
 	if [ "$DISTRIB_RELEASE" = "16.04" ]; then
 		DISTRO="xenial"
 		echo "Detected distribution: Xenial Xerus"
-	elif [ "$DISTRIB_RELEASE" = "17.04" ]; then
-		DISTRO="zesty"
-		echo "Detected distribution: Zesty Zephyr"
 	else
 		echo "Unsupported distribution!"
 		exit 1
