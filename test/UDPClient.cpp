@@ -10,9 +10,9 @@ BOOST_AUTO_TEST_CASE(udp_send_state)
 {
     DroneState state;
     state.id = 1;
-    state.pos.x = 4;
+    state.pos.x = 2;
     state.pos.y = 3;
-    state.psi = -3;
+    state.psi = -40000;
     UDPClient client("127.0.0.1", "6000");
     client.send_state(state);
     cout << "Sent!\n";
