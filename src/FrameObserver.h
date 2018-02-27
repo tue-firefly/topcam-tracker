@@ -9,12 +9,8 @@
 
 using namespace cv;
 
-namespace AVT {
-namespace VmbAPI {
-namespace Examples {
 
-
-class FrameObserver : virtual public IFrameObserver
+class FrameObserver : virtual public AVT::VmbAPI::IFrameObserver
 {
 public:
     //
@@ -23,7 +19,7 @@ public:
     // Parameters:
     //  [in]    pCamera             The camera the frame was queued at
     //
-    FrameObserver(CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port);
+    FrameObserver(AVT::VmbAPI::CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port);
     
     //
     // This is our callback routine that will be executed on every received frame.
@@ -32,7 +28,7 @@ public:
     // Parameters:
     //  [in]    pFrame          The frame returned from the API
     //
-    virtual void FrameReceived( const FramePtr pFrame );
+    virtual void FrameReceived( const AVT::VmbAPI::FramePtr pFrame );
 
 private:
     UDPClient                   udp;
@@ -40,7 +36,5 @@ private:
     boost::asio::io_service 	io_service;
     double 			exposure;
 };
-
-}}} // namespace AVT::VmbAPI::Examples
 
 #endif

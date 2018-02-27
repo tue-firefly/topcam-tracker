@@ -17,18 +17,13 @@
 
 using namespace cv;
 
-namespace AVT {
-namespace VmbAPI {
-namespace Examples {
-
-
 //
 // We pass the camera that will deliver the frames to the constructor
 //
 // Parameters:
 //  [in]    pCamera             The camera the frame was queued at
 //
-FrameObserver::FrameObserver( CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port)
+FrameObserver::FrameObserver( AVT::VmbAPI::CameraPtr pCamera, unsigned int nrDrones, const std::string& ip, const std::string& port)
     :   IFrameObserver( pCamera )
     ,   udp(ip, port)
     ,   detector(nrDrones)
@@ -43,7 +38,7 @@ FrameObserver::FrameObserver( CameraPtr pCamera, unsigned int nrDrones, const st
 // Parameters:
 //  [in]    pFrame          The frame returned from the API
 //
-void FrameObserver::FrameReceived( const FramePtr pFrame )
+void FrameObserver::FrameReceived( const AVT::VmbAPI::FramePtr pFrame )
 {
     if(! SP_ISNULL( pFrame ) )
     {
@@ -120,5 +115,3 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
 
     m_pCamera->QueueFrame( pFrame );
 }
-
-}}} // namespace AVT::VmbAPI::Examples
