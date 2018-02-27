@@ -28,7 +28,7 @@ int main( int argc, char* argv[] )
     std::string ip(argv[2]);
     std::string port(argv[3]);
 
-    AVT::VmbAPI::Examples::ApiController apiController;
+    ApiController apiController;
     
     // Startup Vimba
     err = apiController.StartUp();        

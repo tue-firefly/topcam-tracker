@@ -14,7 +14,7 @@ if [ -f "/etc/arch-release" ]; then
 	echo "Detected distribution: Arch Linux"
 elif [ -f "/etc/lsb-release" ]; then
 	source /etc/lsb-release
-	if [ "$DISTRIB_RELEASE" = "16.04" ]; then
+	if [ "$DISTRIB_RELEASE" = "16.04" ] || [ "$DISTRIB_RELEASE" = "18.2" ]; then
 		DISTRO="xenial"
 		echo "Detected distribution: Xenial Xerus"
 	else

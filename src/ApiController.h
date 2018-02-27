@@ -7,10 +7,6 @@
 
 #include "FrameObserver.h"
 
-namespace AVT {
-namespace VmbAPI {
-namespace Examples {
-
 class ApiController
 {
   public:
@@ -61,7 +57,7 @@ class ApiController
     // Returns:
     //  A vector of camera shared pointers
     //
-    CameraPtrVector     GetCameraList() const;
+    AVT::VmbAPI::CameraPtrVector     GetCameraList() const;
     
     //
     // Translates Vimba error codes to readable error messages
@@ -84,16 +80,14 @@ class ApiController
     // Returns:
     //  An API status code
     //
-    VmbErrorType        SetExposureTimeAbs(const CameraPtr &pCamera, float exposure);
+    VmbErrorType        SetExposureTimeAbs(const AVT::VmbAPI::CameraPtr &pCamera, float exposure);
 
   private:
     VmbErrorType        PrepareCamera();
-    VmbErrorType        SetPixelFormat(const CameraPtr &pCamera, VmbPixelFormatType format);
-    VimbaSystem &       m_system;                   // A reference to our Vimba singleton
-    CameraPtr           m_pCamera;                  // The currently streaming camera
+    VmbErrorType        SetPixelFormat(const AVT::VmbAPI::CameraPtr &pCamera, VmbPixelFormatType format);
+    AVT::VmbAPI::VimbaSystem &       m_system;                   // A reference to our Vimba singleton
+    AVT::VmbAPI::CameraPtr           m_pCamera;                  // The currently streaming camera
     FrameObserver*      m_pFrameObserver;           // Every camera has its own frame observer
 };
-
-}}} // namespace AVT::VmbAPI::Examples
 
 #endif

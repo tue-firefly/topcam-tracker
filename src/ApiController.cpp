@@ -3,17 +3,13 @@
 
 #include "ApiController.h"
 
-namespace AVT {
-namespace VmbAPI {
-namespace Examples {
-
 #define NUM_FRAMES 3
 #define DEFAULT_EXPOSURE 2500
 #define PIXEL_FORMAT VmbPixelFormatMono8
 
 ApiController::ApiController()
     // Get a reference to the Vimba singleton
-    : m_system ( VimbaSystem::GetInstance() )
+    : m_system ( AVT::VmbAPI::VimbaSystem::GetInstance() )
 {}
 
 ApiController::~ApiController()
@@ -98,7 +94,7 @@ VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& 
     {
         // Set the GeV packet size to the highest possible value
         // (In this example we do not test whether this cam actually is a GigE cam)
-        FeaturePtr pCommandFeature;
+        AVT::VmbAPI::FeaturePtr pCommandFeature;
         if ( VmbErrorSuccess == m_pCamera->GetFeatureByName( "GVSPAdjustPacketSize", pCommandFeature ))
         {
             if ( VmbErrorSuccess == pCommandFeature->RunCommand() )
@@ -124,7 +120,7 @@ VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& 
                 // Create a frame observer for this camera (This will be wrapped in a shared_ptr so we don't delete it)
                 m_pFrameObserver = new FrameObserver(m_pCamera, nrDrones, ip, port);
                 // Start streaming
-                res = m_pCamera->StartContinuousImageAcquisition( NUM_FRAMES, IFrameObserverPtr( m_pFrameObserver ));
+                res = m_pCamera->StartContinuousImageAcquisition( NUM_FRAMES, AVT::VmbAPI::IFrameObserverPtr( m_pFrameObserver ));
             }
         }
         if ( VmbErrorSuccess != res )
@@ -138,10 +134,10 @@ VmbErrorType ApiController::StartContinuousImageAcquisition( const std::string& 
 }
 
 /**setting a feature to maximum value that is a multiple of 2*/
-VmbErrorType SetIntFeatureValueModulo2( const CameraPtr &pCamera, const char* const& Name )
+VmbErrorType SetIntFeatureValueModulo2( const AVT::VmbAPI::CameraPtr &pCamera, const char* const& Name )
 {
     VmbErrorType    result;
-    FeaturePtr      feature;
+    AVT::VmbAPI::FeaturePtr      feature;
     VmbInt64_t      value_min,value_max;
     result = SP_ACCESS( pCamera )->GetFeatureByName( Name, feature );
     if( VmbErrorSuccess != result )
@@ -158,9 +154,9 @@ VmbErrorType SetIntFeatureValueModulo2( const CameraPtr &pCamera, const char* co
     return result;
 }
 /**set the exposure time of the camera*/
-VmbErrorType ApiController::SetExposureTimeAbs(const CameraPtr &pCamera, float exposure) {
+VmbErrorType ApiController::SetExposureTimeAbs(const AVT::VmbAPI::CameraPtr &pCamera, float exposure) {
     VmbErrorType    result;
-    FeaturePtr      feature;
+    AVT::VmbAPI::FeaturePtr      feature;
     result = SP_ACCESS(pCamera)->GetFeatureByName("ExposureTimeAbs", feature);
     if(VmbErrorSuccess != result) {
         return result;
@@ -170,9 +166,9 @@ VmbErrorType ApiController::SetExposureTimeAbs(const CameraPtr &pCamera, float e
 }
 
 /**set the pixel format of the camera*/
-VmbErrorType ApiController::SetPixelFormat(const CameraPtr &pCamera, VmbPixelFormatType format) {
+VmbErrorType ApiController::SetPixelFormat(const AVT::VmbAPI::CameraPtr &pCamera, VmbPixelFormatType format) {
     VmbErrorType    result;
-    FeaturePtr      feature;
+    AVT::VmbAPI::FeaturePtr      feature;
     result = SP_ACCESS(pCamera)->GetFeatureByName("PixelFormat", feature);
     if(VmbErrorSuccess != result) {
         return result;
@@ -221,15 +217,14 @@ VmbErrorType ApiController::StopContinuousImageAcquisition()
 // Returns:
 //  A vector of camera shared pointers
 //
-CameraPtrVector ApiController::GetCameraList() const
+AVT::VmbAPI::CameraPtrVector ApiController::GetCameraList() const
 {
-    CameraPtrVector cameras;
+    AVT::VmbAPI::CameraPtrVector cameras;
     // Get all known cameras
     if ( VmbErrorSuccess == m_system.GetCameras( cameras ))
     {
         // And return them
         return cameras;
     }
-    return CameraPtrVector();
+    return AVT::VmbAPI::CameraPtrVector();
 }
-}}} // namespace AVT::VmbAPI::Examples
