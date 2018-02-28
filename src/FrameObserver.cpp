@@ -106,10 +106,10 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
             if(deltaExposure != 0) {
                 exposure += deltaExposure;
                 if (exposure < 1000) {
-                    exposure = 1000;
+                    exposure = 10000;
                 }
                 else if (exposure > 10000) {
-                    exposure = 10000;
+                    exposure = 1000;
                 }
                 std::cout << "Exposure: " << exposure << "\n";
                 ApiController api;

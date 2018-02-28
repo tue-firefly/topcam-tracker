@@ -1,5 +1,4 @@
 #include "DroneDetector.h"
-#include "CameraNormalization.h"
 
 #include <opencv2/imgproc.hpp>
 
@@ -11,7 +10,7 @@
 // Maximum difference between two psi measurements, in radians (0.35 radians is about 20 degrees)
 #define PSI_MAX_DIFF 0.35
 // If detection fails, change the exposure by this amount
-#define DELTA_EXPOSURE 50
+#define DELTA_EXPOSURE 100
 // Number of leds per drone
 #define NR_LEDS 3
 
@@ -28,11 +27,7 @@ vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points)
 	return empty;
     }
     Mat labels, centers;
-    double sizeDouble = (double)points.size();
-    double ledsDouble = (double)NR_LEDS;
-    double clusterDouble = sizeDouble/ledsDouble;
-    int nrClusters = ceil(clusterDouble);
-    std::cout << "trying to make " << nrClusters << " clusters\n";
+    int nrClusters = points.size() / NR_LEDS;
     kmeans(points, nrClusters, labels, 
         TermCriteria( TermCriteria::EPS+TermCriteria::COUNT, 10, 1.0),
         3, KMEANS_PP_CENTERS, centers);
@@ -40,10 +35,6 @@ vector< vector<Point2f> > DroneDetector::PartitionPoints(vector<Point2f> points)
     for(unsigned int i = 0; i < points.size(); i++) {
         int cluster = labels.at<int>(i);
         partitioned[cluster].push_back(points[i]);
-    }
-    std::cout << "made " << partitioned.size() << " drones, with \n";
-    for(unsigned int i = 0; i < partitioned.size(); i++){
-	std::cout << "drone " << i << " has " <<  partitioned[i].size() << " leds\n";
     }
     return partitioned;    
 }
@@ -97,8 +88,6 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
     Point2f top;
     top.x = (leds[2].x + leds[1].x)/2;
     top.y = (leds[2].y + leds[1].y)/2;
-    std::cout << "I changed some shit\n";
-    //double direction[2] = {top.x, top.y};
     double direction[2] = {top.x - center.x, top.y - center.y };
 
 
@@ -106,7 +95,7 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
     std::cout << "calculate physical center\n";
     Point2f offset(X_OFF, Y_OFF);
     Point2f physicalCenter = center * PIXELS2METERS - offset;
-    printf("Physical centre at X: %.5f ; Y: %.5f\n", physicalCenter.x, physicalCenter.y);
+
     //Vec4f line;
     //fitLine(leds, line, CV_DIST_L2, 0, 0.01, 0.01);
 
@@ -122,12 +111,6 @@ DroneState DroneDetector::GetState(vector<Point2f> leds) {
     std::cout <<"Make new state\n";
     DroneState state;
     // According to conventions
-    float *normalized = (float *) malloc(2*sizeof(float));
-    float *original = (float *) malloc(2*sizeof(float));
-    *(original+0) = physicalCenter.x;
-    *(original+1) = -physicalCenter.y;
-    pixeltonormalized(normalized,original);
-    //Point2f pos(*(normalized+0), *(normalized+1));
     Point2f pos(-physicalCenter.y, physicalCenter.x);
     state.pos = pos;
     state.psi = psi;
@@ -182,6 +165,7 @@ vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     Mat thresh;
+    
     threshold(frame, thresh, 100, 255, CV_THRESH_BINARY);
     if(thresh.empty()){
 	std::cout << "thresh is empty, boosting exposure \n";
@@ -197,49 +181,32 @@ vector<DroneState> DroneDetector::FindDrones(Mat frame, int* deltaExposure) {
     }
     else if (contours.size() < NR_LEDS * nrDrones) {
 	std::cout << "too little leds, boosting exposure. leds: " << contours.size() << "\n";
-	*deltaExposure = DELTA_EXPOSURE;
+        *deltaExposure = DELTA_EXPOSURE;
     }
     else {
         *deltaExposure = 0;
     }
-    if(contours.size() >= 3){
-    // Turn contours into points 
-    	vector<Point2f> leds(contours.size());
-    	for(unsigned int i = 0; i < contours.size(); i++) {
-        	float radius;
-        	minEnclosingCircle(contours[i], leds[i], radius);
-    	} 
-    	vector<vector<Point2f> > partitioned = PartitionPoints(leds);
-		std::cout << "check if one drone has too little leds \n";
-		int erased = 1;
-		while (erased == 1){
-			erased = 0;
-			for(unsigned int i = 0; i < partitioned.size();i++){
-				if(partitioned[i].size() !=  NR_LEDS){
-					std::cout << "Drone " << i << " has too little leds and is deleted!\n";
-					partitioned.erase(partitioned.begin()+i);
-					//Check if deletion is correct
-					std::cout << "nr of drones left: " << partitioned.size() << "\n";
-					for (unsigned int j = 0; j < partitioned.size();j++){
-						std::cout << "nr of leds in drone " << j << " : " << partitioned[j].size() << "\n";
-					} 
-					erased = 1;
-					break;
-				}
-			}
-		}
-    	if(partitioned.size() > 0){
-		vector<DroneState> states;
-    		states.reserve(partitioned.size());
-    		for(unsigned int i = 0; i < partitioned.size(); i++) {
-        		states.push_back(GetState(partitioned[i]));
-    		}
-    		UpdateStates(states);
-    		return states;
-	}else{
-		return vector<DroneState>();
-	}
-    }else{
-	return vector<DroneState>();	
+
+    if (contours.size() % NR_LEDS == 0) {
+        // Turn contours into points 
+        vector<Point2f> leds(contours.size());
+        for(unsigned int i = 0; i < contours.size(); i++) {
+            float radius;
+            minEnclosingCircle(contours[i], leds[i], radius);
+        } 
+
+        vector<vector<Point2f> > partitioned = PartitionPoints(leds);
+        vector<DroneState> states;
+        states.reserve(partitioned.size());
+        for(unsigned int i = 0; i < partitioned.size(); i++) {
+            states.push_back(GetState(partitioned[i]));
+        }
+        UpdateStates(states);
+        return states;
+
+    }
+    else {
+	std::cout << "number of leds found: " << contours.size() << "\n";
+        return vector<DroneState>();
     }
 }
