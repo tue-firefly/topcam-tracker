@@ -56,10 +56,11 @@ OBJ_FILES           = $(OBJ_DIR)/DroneDetector.o \
                       $(OBJ_DIR)/FrameObserver.o \
                       $(OBJ_DIR)/crc16.o \
                       $(OBJ_DIR)/program.o \
-		      $(OBJ_DIR)/CameraNormalization.o
+                      $(OBJ_DIR)/CameraNormalization.o
 
 TEST_OBJ_FILES	    = $(OBJ_DIR)/DroneDetector.o \
-		      $(OBJ_DIR)/CameraNormalization.o \
+        		      $(OBJ_DIR)/CameraNormalization.o \
+                      $(OBJ_DIR)/crc16.o \
                       $(TEST_DIR)/main.o
 
 DEPENDENCIES        = VimbaCPP
