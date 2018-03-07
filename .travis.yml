@@ -5,12 +5,13 @@ language: generic
 services:
 - docker
 
+env:
+- DISTRO=arch
+- DISTRO=xenial
+- DISTRO=artful
+
 install:
-- docker build . -t arch -f dockerfiles/arch
-- docker build . -t xenial -f dockerfiles/xenial
-- docker build . -t artful -f dockerfiles/artful
+- docker build . -t "$DISTRO" -f "dockerfiles/$DISTRO"
 
 script:
-- docker run -t arch make test
-- docker run -t xenial make test
-- docker run -t artful make test
+- docker run -t "$DISTRO" make test
