@@ -17,6 +17,9 @@ elif [ -f "/etc/lsb-release" ]; then
 	if [ "$DISTRIB_RELEASE" = "16.04" ] || [ "$DISTRIB_RELEASE" = "18.2" ]; then
 		DISTRO="xenial"
 		echo "Detected distribution: Xenial Xerus"
+    elif [ "$DISTRIB_RELEASE" = "17.10" ]; then
+        DISTRO="artful"
+		echo "Detected distribution: Aartful Aardvark"
 	else
 		echo "Unsupported distribution!"
 		exit 1
@@ -51,7 +54,7 @@ echo "Created $(readlink -e $DOTENV_PATH)"
 if [ "$DISTRO" = "arch" ]; then
 	PACKAGES="opencv hdf5 boost gcc make pkg-config cowsay python"
 	sudo pacman -Sy --noconfirm $PACKAGES || echo "Failed to install packages ($PACKAGES). Please install them manually"
-elif [ "$DISTRO" = "xenial" ] || [ "$DISTRO" = "zesty"  ]; then
+elif [ "$DISTRO" = "xenial" ] || [ "$DISTRO" = "artful"  ]; then
 	sudo add-apt-repository -y ppa:timsc/opencv-3.3
 	sudo apt-get update
 	sudo apt-get install -y libopencv-dev libboost-all-dev build-essential g++ cowsay python3

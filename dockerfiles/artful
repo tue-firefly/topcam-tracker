@@ -1,0 +1,10 @@
+FROM ubuntu:17.10
+RUN apt-get update
+RUN apt-get install -y sudo curl software-properties-common python-software-properties
+
+COPY . /home/topcam-tracker
+WORKDIR /home/topcam-tracker
+# Add the games directory to the PATH variable, so we can find cowsay
+ENV PATH="/usr/games:${PATH}" 
+RUN ./install.sh
+RUN /bin/bash -c "source ./.env && make"
