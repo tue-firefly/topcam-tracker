@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <ctime>
+#include <chrono>
 
 #include "FrameObserver.h"
 #include "ApiController.h"
@@ -46,6 +47,11 @@ void FrameObserver::FrameReceived( const AVT::VmbAPI::FramePtr pFrame )
         VmbUint32_t nHeight = 0;
         VmbUchar_t *pImage = NULL;
 
+        // Get timestamp in microseconds.
+        // Consider this point in the code as the closest one to the real state of the drone.
+        auto timestamp = std::chrono::time_point_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now());
+        uint64_t timestamp_us = timestamp.time_since_epoch().count();
+
         pFrame->GetWidth( nWidth );
         pFrame->GetHeight( nHeight );
         pFrame->GetImage( pImage );
@@ -61,6 +67,9 @@ void FrameObserver::FrameReceived( const AVT::VmbAPI::FramePtr pFrame )
             Mat colored;
             cvtColor(frame, colored, CV_GRAY2RGB, 0);
             for(unsigned int i = 0; i < states.size(); i++) {
+            	// Add timestamp to DroneState
+            	states[i].timestamp = timestamp_us;
+
                 // Draw the states
                 //  Fix conventions
                 Point2f center(states[i].pos.y, -states[i].pos.x);
@@ -70,9 +79,10 @@ void FrameObserver::FrameReceived( const AVT::VmbAPI::FramePtr pFrame )
                 // Colors red, green and blue for drones 1, 2, 3 respectively
                 // if more drones are detected they are white
                 Scalar color(
-                    i == 2 || i > 2 ? 255 : 0, 
-                    i == 1 || i > 2 ? 255 : 0, 
-                    i == 0 || i > 2 ? 255 : 0);
+
+                    states[i].id == 2 || i > 2 ? 255 : 0, 
+                    states[i].id == 1 || i > 2 ? 255 : 0, 
+                    states[i].id == 0 || i > 2 ? 255 : 0);
                 circle(colored, center, 5, color, 3, 8);
 
                 Point start = center;
@@ -80,7 +90,9 @@ void FrameObserver::FrameReceived( const AVT::VmbAPI::FramePtr pFrame )
                 double psi = fmod(states[i].psi - (M_PI/2), 2*M_PI);
                 end.x += cos(psi) * 100;
                 end.y += sin(psi) * 100;
-                arrowedLine(colored, start, end, color, 1, 8);
+                arrowedLine(colored, start, end, color, 1, 8); 
+
+                std::cout << "timestamp: " << states[i].timestamp << ", x: " << states[i].pos.x << ", y: " << states[i].pos.y << ", psi: " << states[i].psi << std::endl;
 
                 // Send states over udp
                 udp.send_state(states[i]);
@@ -89,10 +101,10 @@ void FrameObserver::FrameReceived( const AVT::VmbAPI::FramePtr pFrame )
             if(deltaExposure != 0) {
                 exposure += deltaExposure;
                 if (exposure < 1000) {
-                    exposure = 1000;
+                    exposure = 10000;
                 }
                 else if (exposure > 10000) {
-                    exposure = 10000;
+                    exposure = 1000;
                 }
                 std::cout << "Exposure: " << exposure << "\n";
                 ApiController api;

@@ -5,6 +5,9 @@
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
 #include "DroneState.h"
+#include "crc16.h"
+
+
 
 using boost::asio::ip::udp;
 
@@ -27,15 +30,25 @@ public:
 	}
 
 	void send(boost::asio::mutable_buffers_1 msg) {
-		socket_.send_to(msg, endpoint_);
+		std::size_t bytes_send = socket_.send_to(msg, endpoint_);
+		std::cout << "UDP endpoint address: " << endpoint_.address() << std::endl;
+		std::cout << "UDP bytes send: " << bytes_send << std::endl;
 	}
 	
 	boost::asio::mutable_buffers_1 serialize(DroneState state) {
 		FlatState* data = new FlatState;
+		data->timestamp = state.timestamp;
 		data->id = state.id;
 		data->x = state.pos.x;
 		data->y = state.pos.y;
 		data->psi = state.psi;
+
+		// Add CRC checksum
+		uint8_t * data_arr = (uint8_t *)data;
+		data->crc16 = ::crc_16(data_arr, sizeof(FlatState) - 2);
+
+//		std::cout << "crc: " << data->crc16 << std::endl;
+
 		return boost::asio::buffer((void *) data, sizeof(FlatState));
 	}
 	
@@ -52,10 +65,12 @@ private:
 	udp::endpoint endpoint_;
 	
 	struct __attribute__ ((packed)) FlatState {
-		unsigned int id;
+		uint64_t timestamp;
+		double id;
 		double x;
 		double y;
 		double psi;
+		uint16_t crc16; // This field must always be the last one. Otherwise serialize is not working properly.
 	};
 };
 

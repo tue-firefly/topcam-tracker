@@ -10,6 +10,7 @@
 #define Y_OFF 3.8
 
 struct DroneState {
+	uint64_t timestamp;
     unsigned int id;
     cv::Point2f pos;
     double psi;

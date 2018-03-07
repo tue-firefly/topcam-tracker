@@ -32,7 +32,7 @@ std::string ApiController::ErrorCodeToMessage( VmbErrorType eErr ) const
         case VmbErrorSuccess:           return "Success.";
         case VmbErrorInternalFault:     return "Unexpected fault in VmbApi or driver.";
         case VmbErrorApiNotStarted:     return "API not started.";
-        case VmbErrorNotFound:          return "Not found.";
+        case VmbErrorNotFound:          return "Camera not found.";
         case VmbErrorBadHandle:         return "Invalid handle ";
         case VmbErrorDeviceNotOpen:     return "Device not open.";
         case VmbErrorInvalidAccess:     return "Invalid access.";
